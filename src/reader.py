@@ -38,6 +38,8 @@ class Reader:
 
             self.data = pd.read_pickle(pickled)
 
+            print('<LOG>:', len(self.data.index), 'rows')
+
             return
 
         print('<LOG>: Processing file', "'" + filename + "'")
