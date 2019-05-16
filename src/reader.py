@@ -1,4 +1,6 @@
 
+import os
+
 import pandas as pd
 
 class Reader:
@@ -23,6 +25,21 @@ class Reader:
         if not isinstance(filename, str):
             raise ValueError("'filename' is not an instance of 'str'")
 
+        if not os.path.isdir('out'):
+            os.mkdir('out')
+
+        pickled = os.path.splitext(os.path.basename(filename))[0] + '.pkl'
+
+        pickled = os.path.join(os.path.curdir, 'out', pickled)
+
+        if os.path.isfile(pickled):
+
+            print('<LOG>: Loading pickled dataframe from', "'" + pickled + "'")
+
+            self.data = pd.read_pickle(pickled)
+
+            return
+
         print('<LOG>: Processing file', "'" + filename + "'")
 
         self.data = pd.read_csv(filename, dtype=self.types, skipinitialspace=True, usecols=self.headers)
@@ -38,6 +55,10 @@ class Reader:
         print('<LOG>:', len(self.data.index), 'rows')
 
         self.data['TIME_OF_DAY'] = ['DAY' if hour >= 6 and hour <= 18 else 'NIGHT' for hour in list(self.data['HOUR'])]
+
+        print('<LOG>: Saving pickled datafrime to', "'" + pickled + "'")
+
+        self.data.to_pickle(pickled)
 
 
     def groupby(self, headers):
