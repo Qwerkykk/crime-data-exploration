@@ -3,18 +3,20 @@ import pandas as pd
 
 class Reader:
 
-    headers = {
-        'INCIDENT_NUMBER': str,
-        'OFFENSE_CODE_GROUP': str,
-        'DISTRICT': str,
-        'SHOOTING': str,
-        'YEAR': int,
-        'MONTH': int,
-        'DAY_OF_WEEK': str,
-        'HOUR': int,
-        'Lat': float,
-        'Long': float
-    }
+    headers = [
+        'INCIDENT_NUMBER',
+        'OFFENSE_CODE_GROUP',
+        'DISTRICT',
+        'SHOOTING',
+        'YEAR',
+        'MONTH',
+        'DAY_OF_WEEK',
+        'HOUR',
+        'Lat',
+        'Long'
+    ]
+
+    types = dict(zip(headers, [str, str, str, str, int, int, str, int, float, float]))
 
     def __init__(self, filename):
 
@@ -23,11 +25,11 @@ class Reader:
 
         print('<LOG>: Processing file', "'" + filename + "'")
 
-        self.data = pd.read_csv(filename, dtype=self.headers, skipinitialspace=True, usecols=self.headers.keys())
+        self.data = pd.read_csv(filename, dtype=self.types, skipinitialspace=True, usecols=self.headers)
 
         print('<LOG>:', len(self.data.index), 'rows')
 
-        self.data['SHOOTING'] = [False if value == pd.NaT else True for value in list(self.data['SHOOTING'])]
+        self.data['SHOOTING'].fillna('N', inplace=True)
 
         print('<LOG>: Dropping NaN values')
 
@@ -38,20 +40,24 @@ class Reader:
         self.data['TIME_OF_DAY'] = ['DAY' if hour >= 6 and hour <= 18 else 'NIGHT' for hour in list(self.data['HOUR'])]
 
 
-    def groupby(self, header):
+    def groupby(self, headers):
 
-        if not isinstance(header, str):
-            raise ValueError("'header' must be an instance of 'str'")
+        if isinstance(headers, str):
+            headers = set([headers])
+        elif isinstance(headers, list):
+            headers = set(headers)
+        else:
+            raise ValueError("'headers' must be an instance of 'list'")
 
-        if not header in self.headers:
-            raise ValueError("'" + header + "' is not supported")
+        if not headers.issubset(self.headers):
+            raise ValueError(headers.difference(self.headers), 'header(s) are not supported')
 
-        return self.data.groupby(header)
+        return self.data.groupby(list(headers))
 
 
 if __name__ == "__main__":
 
     reader = Reader('../data/crime.csv')
 
-    print(reader.groupby('SHOOTING'))
+    print(reader.groupby(['SHOOTING']))
 
