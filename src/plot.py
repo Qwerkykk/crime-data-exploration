@@ -51,6 +51,8 @@ if __name__ == "__main__":
     plotter.countplot('DISTRICT')
 
     # Questeion 3
+    plotter.countplot('HOUR')
+
     plotter.countplot('TIME')
 
     # ax = sb.countplot(x='HOUR', data=reader.data)
