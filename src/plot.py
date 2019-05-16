@@ -18,19 +18,32 @@ class Plotter:
         self.data = reader.data
 
 
-    def countplot(self, header, palette='Set3'):
+    def countplot(self, header, title, predicate=None, palette='Set3', hue=None):
 
         if not isinstance(header, str):
             raise ValueError("'header' is not an instrance of 'str'")
+
+        if not isinstance(title, str):
+            raise ValueError("'title' is not an instrance of 'str'")
 
         if header == 'DAY_OF_WEEK':
             order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         else:
             order = sorted(self.data[header].unique())
 
-        axes = sb.countplot(x=header, data=self.data, order=order, palette=palette)
+        data = self.data
 
-        axes.set(xlabel=header.replace('_', ' ').title(), ylabel='')
+        if predicate:
+            data = data[predicate(data)]
+
+        axes = sb.countplot(x=header, data=data, order=order, palette=palette, hue=hue)
+
+        if header == 'MONTH':
+            axes.set_xticklabels(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'])
+
+        axes.set_title(title)
+
+        axes.set(xlabel='', ylabel='')
 
         plt.show()
 
@@ -39,27 +52,22 @@ if __name__ == "__main__":
 
     reader = Reader('../data/crime.csv')
 
-    # Question 1
+    # Question No.1
     plotter = Plotter(reader)
 
-    plotter.countplot('YEAR')
+    plotter.countplot('YEAR', 'Crimes per Year')
 
-    plotter.countplot('MONTH')
+    plotter.countplot('MONTH', 'Crimes per Month')
 
-    plotter.countplot('DAY_OF_WEEK')
+    plotter.countplot('DAY_OF_WEEK', 'Crimes per Day')
 
-    plotter.countplot('DISTRICT')
+    plotter.countplot('DISTRICT', 'Crimes per District')
 
-    # Questeion 3
-    plotter.countplot('HOUR')
+    # Question No.2
+    plotter.countplot('YEAR', 'Shootings per Year', predicate=lambda data: data['SHOOTING'] == 'Y')
 
-    plotter.countplot('TIME')
+    plotter.countplot('DISTRICT', 'Shootings per District', predicate=lambda data: data['SHOOTING'] == 'Y')
 
-    # ax = sb.countplot(x='HOUR', data=reader.data)
-
-    # plt.show()
-
-    # ax = sb.countplot(x='YEAR', hue='SHOOTING', data=reader.data[reader.data['SHOOTING'] == 'Y'])
-
-    # plt.show()
+    # Question No.3
+    plotter.countplot('TIME_PERIOD', 'Crimes per Time Period')
 

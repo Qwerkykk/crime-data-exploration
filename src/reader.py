@@ -54,7 +54,7 @@ class Reader:
 
         print('<LOG>:', len(self.data.index), 'rows')
 
-        self.data['TIME'] = ['Day' if hour >= 6 and hour <= 18 else 'Night' for hour in list(self.data['HOUR'])]
+        self.data['TIME_PERIOD'] = ['Night' if hour <= 6 or hour >= 18 else 'Day' for hour in list(self.data['HOUR'])]
 
         print('<LOG>: Saving pickled datafrime to', "'" + pickled + "'")
 
