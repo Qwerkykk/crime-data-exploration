@@ -39,6 +39,7 @@ if __name__ == "__main__":
 
     reader = Reader('../data/crime.csv')
 
+    # Question 1
     plotter = Plotter(reader)
 
     plotter.countplot('YEAR')
@@ -48,6 +49,9 @@ if __name__ == "__main__":
     plotter.countplot('DAY_OF_WEEK')
 
     plotter.countplot('DISTRICT')
+
+    # Questeion 3
+    plotter.countplot('TIME')
 
     # ax = sb.countplot(x='HOUR', data=reader.data)
 
