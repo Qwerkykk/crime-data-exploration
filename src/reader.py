@@ -80,5 +80,5 @@ if __name__ == "__main__":
 
     reader = Reader('../data/crime.csv')
 
-    print(reader.groupby(['SHOOTING']))
+    print(reader.groupby(['DAY_OF_WEEK'])['HOUR'].apply(list))
 
