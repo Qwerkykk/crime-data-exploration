@@ -1,9 +1,9 @@
 
-import csv
+import pandas as pd
 
 class Reader:
 
-    headers = {
+    headers = [
         'INCIDENT_NUMBER',
         'OFFENSE_CODE_GROUP',
         'DISTRICT',
@@ -14,46 +14,29 @@ class Reader:
         'HOUR',
         'Lat',
         'Long'
-    }
-
-    transform = { header: lambda entry: entry for header in headers }
-
-    transform['SHOOTING'] = lambda entry: True if entry else False
-    transform['YEAR']     = lambda entry: int(entry)
-    transform['MONTH']    = lambda entry: int(entry)
-    transform['HOUR']     = lambda entry: int(entry)
-    transform['Lat']      = lambda entry: float(entry)
-    transform['Long']     = lambda entry: float(entry)
+    ]
 
     def __init__(self, filename):
 
-        self.columns = { key : [] for key in self.headers }
+        if not isinstance(filename, str):
+            raise ValueError("'filename' is not an instance of 'str'")
 
-        with open(filename, 'r', encoding='ascii', errors='ignore') as file:
+        print('<LOG>: Loading headers', self.headers)
 
-            reader = csv.reader(file)
+        self.data = pd.read_csv(filename, skipinitialspace=True, usecols=self.headers)
 
-            headers = list(map(lambda s: s.strip(), list(next(reader, None))))
+        print('<LOG>:', len(self.data.index), 'rows [Before dropping NaN values]')
 
-            indices = { index : header for index, header in enumerate(headers) if header in self.columns.keys() }
+        self.data['SHOOTING'].fillna('N', inplace=True)
 
-            total, skipped = 0, 0
+        self.data.dropna()
 
-            for row in reader:
-                total += 1
-                row = list(map(str.strip, row))
+        print('<LOG>:', len(self.data.index), 'rows [After dropping NaN values]')
 
-                for index in range(len(row)):
-                    if index in indices.keys():
-                        header = indices[index]
-                        entry  = self.transform[header](row[index])
-                        self.columns[header].append(entry)
-
-            if skipped:
-                print("<LOG>:", skipped, "out of", total, "lines skipped")
+        self.data['TIME_OF_DAY'] = ['DAY' if hour >= 6 and hour <= 18 else 'NIGHT' for hour in list(self.data['HOUR'])]
 
 
-    def group_by(self, header):
+    def groupby(self, header):
 
         if not isinstance(header, str):
             raise ValueError("'header' must be an instance of 'str'")
@@ -61,20 +44,12 @@ class Reader:
         if not header in self.headers:
             raise ValueError("'" + header + "' is not supported")
 
-        groups = {}
-
-        for id, value in zip(self.columns['INCIDENT_NUMBER'], self.columns[header]):
-            if not value in groups:
-                groups[value] = []
-
-            groups[value].append(id)
-
-        return groups
+        return self.data.groupby(header)
 
 
 if __name__ == "__main__":
 
     reader = Reader('../data/head.csv')
 
-    print(reader.group_by('SHOOTING'))
+    print(reader.groupby('SHOOTING'))
 
