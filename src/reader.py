@@ -37,17 +37,44 @@ class Reader:
 
             indices = { index : header for index, header in enumerate(headers) if header in self.columns.keys() }
 
+            total, skipped = 0, 0
+
             for row in reader:
+                total += 1
+                row = list(map(str.strip, row))
+
                 for index in range(len(row)):
                     if index in indices.keys():
                         header = indices[index]
-                        entry  = self.transform[header](row[index].strip())
+                        entry  = self.transform[header](row[index])
                         self.columns[header].append(entry)
+
+            if skipped:
+                print("<LOG>:", skipped, "out of", total, "lines skipped")
+
+
+    def group_by(self, header):
+
+        if not isinstance(header, str):
+            raise ValueError("'header' must be an instance of 'str'")
+
+        if not header in self.headers:
+            raise ValueError("'" + header + "' is not supported")
+
+        groups = {}
+
+        for id, value in zip(self.columns['INCIDENT_NUMBER'], self.columns[header]):
+            if not value in groups:
+                groups[value] = []
+
+            groups[value].append(id)
+
+        return groups
 
 
 if __name__ == "__main__":
 
     reader = Reader('../data/head.csv')
 
-    
+    print(reader.group_by('SHOOTING'))
 
