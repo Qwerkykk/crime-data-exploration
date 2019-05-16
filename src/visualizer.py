@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from reader import Reader
 
-class Plotter:
+class Visualizer:
 
     def __init__(self, reader):
 
@@ -58,24 +58,24 @@ if __name__ == "__main__":
     reader = Reader('../data/crime.csv')
 
     # Question No.1
-    plotter = Plotter(reader)
+    visualizer = Visualizer(reader)
 
-    plotter.countplot('YEAR', 'Crimes per Year')
+    visualizer.countplot('YEAR', 'Crimes per Year')
 
-    plotter.countplot('MONTH', 'Crimes per Month')
+    visualizer.countplot('MONTH', 'Crimes per Month')
 
-    plotter.countplot('DAY_OF_WEEK', 'Crimes per Day')
+    visualizer.countplot('DAY_OF_WEEK', 'Crimes per Day')
 
-    plotter.countplot('DISTRICT', 'Crimes per District')
+    visualizer.countplot('DISTRICT', 'Crimes per District')
 
     # Question No.2
-    plotter.countplot('YEAR', 'Shootings per Year', predicate=lambda data: data['SHOOTING'] == 'Y')
+    visualizer.countplot('YEAR', 'Shootings per Year', predicate=lambda data: data['SHOOTING'] == 'Y')
 
-    plotter.countplot('DISTRICT', 'Shootings per District', predicate=lambda data: data['SHOOTING'] == 'Y')
+    visualizer.countplot('DISTRICT', 'Shootings per District', predicate=lambda data: data['SHOOTING'] == 'Y')
 
     # Question No.3
-    plotter.countplot('TIME_PERIOD', 'Crimes per Time Period')
+    visualizer.countplot('TIME_PERIOD', 'Crimes per Time Period')
 
     # Question No.4
-    plotter.countplot('OFFENSE_CODE_GROUP', 'Most Frequent Type Of Crime During The Day', predicate=lambda data: data['TIME_PERIOD'] == 'Day', squeeze=True)
+    visualizer.countplot('OFFENSE_CODE_GROUP', 'Most Frequent Type Of Crime During The Day', predicate=lambda data: data['TIME_PERIOD'] == 'Day', squeeze=True)
 
