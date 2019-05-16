@@ -18,7 +18,7 @@ class Plotter:
         self.data = reader.data
 
 
-    def countplot(self, header, title, predicate=None, palette='Set3', hue=None):
+    def countplot(self, header, title, squeeze=False, predicate=None, palette='Set3'):
 
         if not isinstance(header, str):
             raise ValueError("'header' is not an instrance of 'str'")
@@ -36,7 +36,7 @@ class Plotter:
         if predicate:
             data = data[predicate(data)]
 
-        axes = sb.countplot(x=header, data=data, order=order, palette=palette, hue=hue)
+        axes = sb.countplot(x=header, data=data, order=order, palette=palette)
 
         if header == 'MONTH':
             axes.set_xticklabels(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'])
@@ -44,6 +44,11 @@ class Plotter:
         axes.set_title(title)
 
         axes.set(xlabel='', ylabel='')
+
+        if squeeze:
+            axes.set_xticklabels(axes.get_xticklabels(), rotation=90, fontsize=7, ha='left')
+
+            plt.tight_layout()
 
         plt.show()
 
@@ -70,4 +75,7 @@ if __name__ == "__main__":
 
     # Question No.3
     plotter.countplot('TIME_PERIOD', 'Crimes per Time Period')
+
+    # Question No.4
+    plotter.countplot('OFFENSE_CODE_GROUP', 'Most Frequent Type Of Crime During The Day', predicate=lambda data: data['TIME_PERIOD'] == 'Day', squeeze=True)
 
