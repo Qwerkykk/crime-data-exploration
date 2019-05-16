@@ -21,17 +21,19 @@ class Reader:
         if not isinstance(filename, str):
             raise ValueError("'filename' is not an instance of 'str'")
 
-        print('<LOG>: Loading headers', list(self.headers.keys()))
+        print('<LOG>: Processing file', "'" + filename + "'")
 
         self.data = pd.read_csv(filename, dtype=self.headers, skipinitialspace=True, usecols=self.headers.keys())
 
-        print('<LOG>:', len(self.data.index), 'rows [Before dropping NaN values]')
+        print('<LOG>:', len(self.data.index), 'rows')
 
-        self.data['SHOOTING'].fillna('N', inplace=True)
+        self.data['SHOOTING'] = [False if value == pd.NaT else True for value in list(self.data['SHOOTING'])]
+
+        print('<LOG>: Dropping NaN values')
 
         self.data.dropna(inplace=True)
 
-        print('<LOG>:', len(self.data.index), 'rows [After dropping NaN values]')
+        print('<LOG>:', len(self.data.index), 'rows')
 
         self.data['TIME_OF_DAY'] = ['DAY' if hour >= 6 and hour <= 18 else 'NIGHT' for hour in list(self.data['HOUR'])]
 
