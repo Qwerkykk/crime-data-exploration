@@ -34,11 +34,11 @@ class Reader:
 
         if os.path.isfile(pickled):
 
-            print('<LOG>: Loading pickled dataframe from', "'" + pickled + "'")
+            print('<LOG>: Loading pickled dataset from', "'" + pickled + "'")
 
             self.data = pd.read_pickle(pickled)
 
-            print('<LOG>:', len(self.data.index), 'rows')
+            print('<LOG>: The dataset consists', len(self.data.index), 'rows and', len(self.data.columns), 'columns')
 
             return
 
@@ -46,7 +46,7 @@ class Reader:
 
         self.data = pd.read_csv(filename, dtype=self.types, skipinitialspace=True, usecols=self.headers)
 
-        print('<LOG>:', len(self.data.index), 'rows')
+        print('<LOG>: The dataset consists', len(self.data.index), 'rows and', len(self.data.columns), 'columns')
 
         self.data['SHOOTING'].fillna('N', inplace=True)
 
@@ -54,18 +54,20 @@ class Reader:
 
         self.data.dropna(inplace=True)
 
-        print('<LOG>:', len(self.data.index), 'rows')
-
         print('<LOG>: Restricting longitude and latitude')
 
         self.data = self.data[lat_predicate(self.data['Lat']) & (lon_predicate(self.data['Long']))]
 
-        print('<LOG>:', len(self.data.index), 'rows')
+        print('<LOG>: Creating column', "'" + 'TIME_PERIOD' + "'")
 
         self.data['TIME_PERIOD'] = ['Night' if hour <= 6 or hour >= 18 else 'Day' for hour in list(self.data['HOUR'])]
 
+        print('<LOG>: Augmenting the dataset by the factorized equivalent of each column')
+
         for header in self.headers:
             self.data[[header + '_FACTORIZED']] = self.data[[header]].stack().rank(method='dense').unstack()
+
+        print('<LOG>: The dataset consists', len(self.data.index), 'rows and', len(self.data.columns), 'columns')
 
         print('<LOG>: Saving pickled datafrime to', "'" + pickled + "'")
 
