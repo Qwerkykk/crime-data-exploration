@@ -35,3 +35,7 @@ if __name__ == '__main__':
     for n_clusters in [2, 3, 5, 10]:
         visualizer.scatterplot(KMeans(reader).fit(n_clusters), title.format(n_clusters))
 
+    visualizer.scatterplot(KMeans(reader).fit(header='MONTH'), 'Crimes per Month')
+
+    visualizer.scatterplot(KMeans(reader).fit(header='OFFENSE_CODE_GROUP'), 'Crimes per Offense Type')
+
