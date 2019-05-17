@@ -16,10 +16,7 @@ class KMeans:
         self.data = reader.data
 
 
-    def fit(self, n_clusters, header=None):
-
-        if not isinstance(n_clusters, int) or n_clusters <= 0:
-            raise ValueError("'n_clusters' must have an integer value greater than zero")
+    def fit(self, n_clusters=None, header=None):
 
         if header:
 
@@ -32,7 +29,12 @@ class KMeans:
 
             data = self.data[['Long', 'Lat', header]]
 
+            n_clusters = len(self.data[header].unique())
+
         else:
+
+            if not isinstance(n_clusters, int) or n_clusters <= 0:
+                raise ValueError("'n_clusters' must have an integer value greater than zero")
 
             print('<LOG>: Clustering according to geographical location')
 
