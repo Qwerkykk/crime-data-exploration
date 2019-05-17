@@ -20,7 +20,7 @@ class Reader:
 
     types = dict(zip(headers, [str, str, str, str, int, int, str, int, float, float]))
 
-    def __init__(self, filename):
+    def __init__(self, filename, lat_predicate=lambda entries: entries > 40, lon_predicate=lambda entries: entries < -60):
 
         if not isinstance(filename, str):
             raise ValueError("'filename' is not an instance of 'str'")
@@ -53,6 +53,12 @@ class Reader:
         print('<LOG>: Dropping NaN values')
 
         self.data.dropna(inplace=True)
+
+        print('<LOG>:', len(self.data.index), 'rows')
+
+        print('<LOG>: Restricting longitude and latitude')
+
+        self.data = self.data[lat_predicate(self.data['Lat']) & (lon_predicate(self.data['Long']))]
 
         print('<LOG>:', len(self.data.index), 'rows')
 
