@@ -1,14 +1,15 @@
 
 from reader import Reader
 from visualizer import Visualizer
+from kmeans import KMeans
 
 if __name__ == "__main__":
 
     reader = Reader('../data/crime.csv')
 
-    # Question No.1
     visualizer = Visualizer(reader)
 
+    # Question No.1
     visualizer.countplot('YEAR', 'Crimes per Year')
 
     visualizer.countplot('MONTH', 'Crimes per Month')
@@ -27,4 +28,10 @@ if __name__ == "__main__":
 
     # Question No.4
     visualizer.countplot('OFFENSE_CODE_GROUP', 'Most Frequent Type Of Crime During The Day', predicate=lambda data: data['TIME_PERIOD'] == 'Day', squeeze=True)
+
+    # Question No.5
+    title = 'Geospatial Clustering [{} clusters]'
+
+    for n_clusters in [2, 3, 5, 10]:
+        visualizer.scatterplot(KMeans(reader).fit(n_clusters), title.format(n_clusters))
 
