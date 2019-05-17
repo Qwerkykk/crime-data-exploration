@@ -47,5 +47,5 @@ if __name__ == '__main__':
 
     reader = Reader('../data/crime.csv')
 
-    Visualizer(reader).scatterplot(KMeans(reader).fit(2))
+    Visualizer(reader).scatterplot(KMeans(reader).fit(2), 'Geospatial Clustering [2 clusters]')
 
