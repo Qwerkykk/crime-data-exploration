@@ -3,7 +3,7 @@ from reader import Reader
 from visualizer import Visualizer
 from kmeans import KMeans
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     reader = Reader('../data/crime.csv')
 

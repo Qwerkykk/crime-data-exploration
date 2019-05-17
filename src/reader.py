@@ -87,7 +87,7 @@ class Reader:
         return self.data.groupby(list(headers))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     reader = Reader('../data/crime.csv')
 
