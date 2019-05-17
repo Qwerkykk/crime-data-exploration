@@ -3,6 +3,8 @@ import os
 
 import pandas as pd
 
+from sklearn.preprocessing import MinMaxScaler
+
 class Reader:
 
     headers = [
@@ -64,8 +66,14 @@ class Reader:
 
         print('<LOG>: Augmenting the dataset by the factorized equivalent of each column')
 
+        gmin = self.data[['Long', 'Lat']].min().min()
+        gmax = self.data[['Long', 'Lat']].max().max()
+
         for header in self.headers:
+
             self.data[[header + '_FACTORIZED']] = self.data[[header]].stack().rank(method='dense').unstack()
+
+            self.data[[header + '_FACTORIZED']] = MinMaxScaler((gmin, gmax)).fit_transform(self.data[[header + '_FACTORIZED']])
 
         print('<LOG>: The dataset consists', len(self.data.index), 'rows and', len(self.data.columns), 'columns')
 
