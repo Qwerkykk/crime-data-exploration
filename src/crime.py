@@ -27,7 +27,7 @@ if __name__ == '__main__':
     visualizer.countplot('TIME_PERIOD', 'Crimes per Time Period')
 
     # Question No.4
-    visualizer.countplot('OFFENSE_CODE_GROUP', 'Most Frequent Type Of Crime During The Day', predicate=lambda data: data['TIME_PERIOD'] == 'Day', squeeze=True)
+    visualizer.countplot('OFFENSE_CODE_GROUP', 'Types Of Crime During The Day', predicate=lambda data: data['TIME_PERIOD'] == 'Day', squeeze=True)
 
     # Question No.5
     title = 'Geospatial Clustering [{} clusters]'
