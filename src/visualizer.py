@@ -51,6 +51,18 @@ class Visualizer:
         plt.show()
 
 
+    def scatterplot(self, hue, title=None, palette='Set2'):
+
+        axes = sns.scatterplot(x='Long', y='Lat', data=self.data, hue=hue, palette=palette, legend=False)
+
+        axes.set(xlabel='Longitude', ylabel='Latitude')
+
+        if title:
+            axes.set_title(title)
+
+        plt.show()
+
+
 if __name__ == "__main__":
 
     reader = Reader('../data/crime.csv')
