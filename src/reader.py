@@ -58,6 +58,9 @@ class Reader:
 
         self.data['TIME_PERIOD'] = ['Night' if hour <= 6 or hour >= 18 else 'Day' for hour in list(self.data['HOUR'])]
 
+        for header in self.headers:
+            self.data[[header + '_FACTORIZED']] = self.data[[header]].stack().rank(method='dense').unstack()
+
         print('<LOG>: Saving pickled datafrime to', "'" + pickled + "'")
 
         self.data.to_pickle(pickled)
