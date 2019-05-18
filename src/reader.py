@@ -1,6 +1,7 @@
 
 import os
 
+import numpy as np
 import pandas as pd
 
 from sklearn.preprocessing import MinMaxScaler
@@ -20,7 +21,7 @@ class Reader:
         'Long'
     ]
 
-    types = dict(zip(headers, [str, str, str, str, int, int, str, int, float, float]))
+    types = dict(zip(headers, [object, object, object, object, np.int32, np.int32, object, np.int32, np.float64, np.float64]))
 
     def __init__(self, filename, lat_predicate=lambda entries: entries > 40, lon_predicate=lambda entries: entries < -60):
 
