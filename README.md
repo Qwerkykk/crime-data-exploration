@@ -520,3 +520,6 @@ visualizer.scatterplot(KMeans(reader).fit(header='OFFENSE_CODE_GROUP'), 'Crimes 
 ```python
 Map(reader).display('OFFENSE_CODE_GROUP')
 ```
+
+![png](Crime%20Data%20Exploration_files/map.png)
+
