@@ -1,9 +1,65 @@
 
 import folium
+from folium import IFrame
+from folium import Popup
 from folium.plugins import MarkerCluster
 from IPython.core.display import display
 
 from reader import Reader
+
+table = """
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        #info {{
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }}
+
+        #info td,
+        #info th {{
+            border: 1px solid #ddd;
+            padding: 8px;
+        }}
+
+        #info tr:nth-child(even) {{
+            background-color: #f2f2f2;
+        }}
+
+        #info tr:hover {{
+            background-color: #ddd;
+        }}
+
+        #info th {{
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: rgb(86, 76, 175);
+            color: white;
+        }}
+    </style>
+</head>
+
+<body>
+
+    <table id="info">
+        <tr>
+            <th>Incident Number</th>
+            <th>{}</th>
+        </tr>
+        <tr>
+            <td>{}</td>
+            <td>{}</td>
+        </tr>
+    </table>
+
+</body>
+
+</html>
+""".format
 
 class Map:
 
@@ -28,25 +84,33 @@ class Map:
         self.center_x, self.center_y = self.data['Lat'].mean(), self.data['Long'].mean()
 
 
-    def show(self, header, predicate=None):
+    def display(self, header, popup_width=400, popup_height=100, predicate=None):
 
         if not isinstance(header, str):
             raise ValueError("'header' is not an instance of 'str'")
 
+        data = self.data[['INCIDENT_NUMBER', 'Lat', 'Long', header]]
+
         if predicate:
-            data = self.data[predicate(self.data)][['Lat', 'Long', header]]
+            data = data[predicate(self.data)]
 
-        else:
-            data = self.data[['Lat', 'Long', header]]
+        locations, popups = {}, {}
 
-        locations = {}
+        formatted_header = header.replace('_', ' ').title()
 
         for _, row in data.iterrows():
 
             if not row[header] in locations:
                 locations[row[header]] = []
+                popups[row[header]] = []
 
             locations[row[header]].append([row['Lat'], row['Long']])
+
+            html = table(formatted_header, row['INCIDENT_NUMBER'], str(row[header]).title())
+
+            ifrm = IFrame(html=html, width=popup_width, height=popup_height)
+
+            popups[row[header]].append(Popup(ifrm))
 
         underlying = folium.Map(location=[self.center_x, self.center_y], zoom_start=self.zoom_start)
 
@@ -54,7 +118,7 @@ class Map:
 
             group = folium.FeatureGroup(str(key).title())
 
-            group.add_child(MarkerCluster(locations[key], len(locations[key]) * [key]))
+            group.add_child(MarkerCluster(locations[key], popups[key]))
 
             underlying.add_child(group)
 
@@ -67,5 +131,5 @@ if __name__ == '__main__':
 
     m = Map(Reader('../data/crime.csv'))
 
-    m.show('OFFENSE_CODE_GROUP')
+    m.display('OFFENSE_CODE_GROUP')
 
