@@ -16,7 +16,7 @@ class Visualizer:
         self.data = reader.data
 
 
-    def countplot(self, header, title, squeeze=False, predicate=None, palette='Set3'):
+    def countplot(self, header, title, squeeze=False, predicate=None, figsize=(16, 6), palette='Set3'):
 
         if not isinstance(header, str):
             raise ValueError("'header' is not an instrance of 'str'")
@@ -33,6 +33,8 @@ class Visualizer:
 
         if predicate:
             data = data[predicate(data)]
+
+        plt.figure(figsize=figsize)
 
         axes = sns.countplot(x=header, data=data, order=order, palette=palette)
 
@@ -51,7 +53,9 @@ class Visualizer:
         plt.show()
 
 
-    def scatterplot(self, hue, title, palette='Set2'):
+    def scatterplot(self, hue, title, figsize=(16, 6), palette='Set2'):
+
+        plt.figure(figsize=figsize)
 
         axes = sns.scatterplot(x='Long', y='Lat', data=self.data, hue=hue, palette=palette, legend=False)
 
