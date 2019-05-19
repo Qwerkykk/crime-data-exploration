@@ -63,9 +63,7 @@ table = """
 
 class Map:
 
-    def __init__(self, reader, sample_size=500, zoom_start=11):
-
-        self.zoom_start = zoom_start
+    def __init__(self, reader, sample_size=500):
 
         if not isinstance(reader, Reader):
             raise ValueError("'reader' is not an instance of 'Reader'")
@@ -84,7 +82,7 @@ class Map:
         self.center_x, self.center_y = self.data['Lat'].mean(), self.data['Long'].mean()
 
 
-    def display(self, header, popup_width=400, popup_height=100, predicate=None):
+    def display(self, header, predicate=None, zoom_start=11, popup_width=400, popup_height=100):
 
         if not isinstance(header, str):
             raise ValueError("'header' is not an instance of 'str'")
@@ -112,7 +110,7 @@ class Map:
 
             popups[row[header]].append(Popup(ifrm))
 
-        underlying = folium.Map(location=[self.center_x, self.center_y], zoom_start=self.zoom_start)
+        underlying = folium.Map(location=[self.center_x, self.center_y], zoom_start=zoom_start)
 
         for key in locations.keys():
 
