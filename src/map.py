@@ -1,4 +1,3 @@
-
 import folium
 from folium import IFrame
 from folium import Popup
@@ -82,18 +81,35 @@ class Map:
         self.center_x, self.center_y = self.data['Lat'].mean(), self.data['Long'].mean()
 
 
-    def display(self, header, predicate=None, zoom_start=11, popup_width=400, popup_height=100):
+    def display(self, header,coloring_attr = 'YEAR', predicate=None, zoom_start=11, popup_width=400, popup_height=100):
 
         if not isinstance(header, str):
             raise ValueError("'header' is not an instance of 'str'")
+        
+        if not isinstance(coloring_attr,str):
+            raise ValueError("'coloring_attr' is not an instance of 'str'")
 
-        data = self.data[['INCIDENT_NUMBER', 'Lat', 'Long', header]]
+        data = self.data[['INCIDENT_NUMBER', 'Lat', 'Long', header,coloring_attr]]
 
         if predicate:
             data = data[predicate(self.data)]
 
-        locations, popups = {}, {}
+        locations, popups ,icons = {}, {}, {}
 
+        available_colors = [ 'blue', 'green', 'purple', 'orange', 'darkred',
+            'lightred', 'beige', 'darkblue', 'darkgreen', 'cadetblue',
+            'darkpurple', 'gray']
+        
+        unique_tag = list(set(data[coloring_attr]))
+    
+        color_pallete = {}
+        
+        for tag in unique_tag:
+            color_pallete[tag] = available_colors[unique_tag.index(tag)]
+        
+        for key in color_pallete.keys():
+            print('<' + str(key) +': ' + str(color_pallete[key]) + '>',end =" ")
+        
         formatted_header = header.replace('_', ' ').title()
 
         for _, row in data.iterrows():
@@ -101,13 +117,15 @@ class Map:
             if not row[header] in locations:
                 locations[row[header]] = []
                 popups[row[header]] = []
+                icons[row[header]] = []
 
-            locations[row[header]].append([row['Lat'], row['Long']])
-
+            locations[row[header]].append([row['Lat'], row['Long']])    
+            
+            icons[row[header]].append(folium.Icon(color=color_pallete[row[coloring_attr]]))
+            
             html = table(formatted_header, row['INCIDENT_NUMBER'], str(row[header]).title())
 
             ifrm = IFrame(html=html, width=popup_width, height=popup_height)
-
             popups[row[header]].append(Popup(ifrm))
 
         underlying = folium.Map(location=[self.center_x, self.center_y], zoom_start=zoom_start)
@@ -115,8 +133,8 @@ class Map:
         for key in locations.keys():
 
             group = folium.FeatureGroup(str(key).title())
-
-            group.add_child(MarkerCluster(locations[key], popups[key]))
+        
+            group.add_child(MarkerCluster(locations[key], popups[key],icons[key]))
 
             underlying.add_child(group)
 
