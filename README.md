@@ -1,5 +1,14 @@
 
-## Crime Data Exploration
+# Contributors
+
+* Sioros Vasileios (billsioros)
+* Konstantinos Kyriakos (Qwerkykk)
+
+# Reader:
+
+- Reads the *csv* file and stores it in memory in panda format. If it already exists on the disk in pickled format it loads it instead
+- Preprocesses the data (converts NaN values in the 'SHOOTING' column to 'N', drops rows with NaN values, creates the factorized equivilant of each column to be used in the kmeans clustering, etc)
+
 
 ```python
 import os
@@ -101,6 +110,11 @@ class Reader:
         return self.data.groupby(list(headers))
 ```
 
+# KMeans:
+
+- Initialization requires a Reader to be passed as an arguement
+- Performs clustering on the dataset according to the geographical location and (optionally) a supplied header / category.
+
 
 ```python
 from re import sub
@@ -145,9 +159,14 @@ class KMeans:
             data = self.data[['Long', 'Lat']]
 
         print('<LOG>: Running kmeans with', '{0:2}'.format(n_clusters), 'clusters')
-
+        
         return cluster.KMeans(n_clusters=n_clusters).fit(data).labels_.astype(float)
 ```
+
+# Visualizer:
+
+- Initialization requires a Reader to be passed as an arguement
+- Data can be visualized with countplot() and scatterplot()
 
 
 ```python
@@ -205,7 +224,7 @@ class Visualizer:
         plt.show()
 
 
-    def scatterplot(self, hue, title, figsize=(16, 6), palette='Set2'):
+    def scatterplot(self, hue, title, figsize=(12, 12), palette='Set2'):
 
         plt.figure(figsize=figsize)
 
@@ -218,6 +237,11 @@ class Visualizer:
 
         plt.show()
 ```
+
+# Map:
+
+- Initialization requires a Reader to be passed as an arguement
+- The display() uses a header / category and a coloring attribute to group and colorize the incidents accordingly
 
 
 ```python
@@ -304,18 +328,35 @@ class Map:
         self.center_x, self.center_y = self.data['Lat'].mean(), self.data['Long'].mean()
 
 
-    def display(self, header, predicate=None, zoom_start=11, popup_width=400, popup_height=100):
+    def display(self, header,coloring_attr = 'YEAR', predicate=None, zoom_start=11, popup_width=400, popup_height=100):
 
         if not isinstance(header, str):
             raise ValueError("'header' is not an instance of 'str'")
+        
+        if not isinstance(coloring_attr,str):
+            raise ValueError("'coloring_attr' is not an instance of 'str'")
 
-        data = self.data[['INCIDENT_NUMBER', 'Lat', 'Long', header]]
+        data = self.data[['INCIDENT_NUMBER', 'Lat', 'Long', header,coloring_attr]]
 
         if predicate:
             data = data[predicate(self.data)]
 
-        locations, popups = {}, {}
+        locations, popups ,icons = {}, {}, {}
 
+        available_colors = [ 'blue', 'green', 'purple', 'orange', 'darkred',
+            'lightred', 'beige', 'darkblue', 'darkgreen', 'cadetblue',
+            'darkpurple', 'gray']
+        
+        unique_tag = list(set(data[coloring_attr]))
+    
+        color_pallete = {}
+        
+        for tag in unique_tag:
+            color_pallete[tag] = available_colors[unique_tag.index(tag)]
+        
+        for key in color_pallete.keys():
+            print('<' + str(key) +': ' + str(color_pallete[key]) + '>',end =" ")
+        
         formatted_header = header.replace('_', ' ').title()
 
         for _, row in data.iterrows():
@@ -323,13 +364,15 @@ class Map:
             if not row[header] in locations:
                 locations[row[header]] = []
                 popups[row[header]] = []
+                icons[row[header]] = []
 
-            locations[row[header]].append([row['Lat'], row['Long']])
-
+            locations[row[header]].append([row['Lat'], row['Long']])    
+            
+            icons[row[header]].append(folium.Icon(color=color_pallete[row[coloring_attr]]))
+            
             html = table(formatted_header, row['INCIDENT_NUMBER'], str(row[header]).title())
 
             ifrm = IFrame(html=html, width=popup_width, height=popup_height)
-
             popups[row[header]].append(Popup(ifrm))
 
         underlying = folium.Map(location=[self.center_x, self.center_y], zoom_start=zoom_start)
@@ -337,8 +380,8 @@ class Map:
         for key in locations.keys():
 
             group = folium.FeatureGroup(str(key).title())
-
-            group.add_child(MarkerCluster(locations[key], popups[key]))
+        
+            group.add_child(MarkerCluster(locations[key], popups[key],icons[key]))
 
             underlying.add_child(group)
 
@@ -352,8 +395,14 @@ class Map:
 reader = Reader('../data/crime.csv')
 ```
 
-    <LOG>: Loading pickled dataset from '.\out\crime.pkl'
+    <LOG>: Processing file '../data/crime.csv'
+    <LOG>: The dataset consists 327820 rows and 10 columns
+    <LOG>: Dropping NaN values
+    <LOG>: Restricting longitude and latitude
+    <LOG>: Creating column 'TIME_PERIOD'
+    <LOG>: Augmenting the dataset by the factorized equivalent of each column
     <LOG>: The dataset consists 305542 rows and 21 columns
+    <LOG>: Saving pickled datafrime to '.\out\crime.pkl'
     
 
 
@@ -367,7 +416,7 @@ visualizer.countplot('YEAR', 'Crimes per Year')
 ```
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_6_0.png)
+![png](./img/output_11_0.png)
 
 
 
@@ -376,7 +425,7 @@ visualizer.countplot('MONTH', 'Crimes per Month')
 ```
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_7_0.png)
+![png](./img/output_12_0.png)
 
 
 
@@ -385,7 +434,7 @@ visualizer.countplot('DAY_OF_WEEK', 'Crimes per Day')
 ```
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_8_0.png)
+![png](./img/output_13_0.png)
 
 
 
@@ -394,7 +443,7 @@ visualizer.countplot('DISTRICT', 'Crimes per District')
 ```
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_9_0.png)
+![png](./img/output_14_0.png)
 
 
 
@@ -403,7 +452,7 @@ visualizer.countplot('YEAR', 'Shootings per Year', predicate=lambda data: data['
 ```
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_10_0.png)
+![png](./img/output_15_0.png)
 
 
 
@@ -412,7 +461,7 @@ visualizer.countplot('DISTRICT', 'Shootings per District', predicate=lambda data
 ```
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_11_0.png)
+![png](./img/output_16_0.png)
 
 
 
@@ -421,7 +470,7 @@ visualizer.countplot('TIME_PERIOD', 'Crimes per Time Period')
 ```
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_12_0.png)
+![png](./img/output_17_0.png)
 
 
 
@@ -430,7 +479,7 @@ visualizer.countplot('OFFENSE_CODE_GROUP', 'Types Of Crime During The Day', pred
 ```
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_13_0.png)
+![png](./img/output_18_0.png)
 
 
 
@@ -448,7 +497,7 @@ visualizer.scatterplot(KMeans(reader).fit(2), title.format(2))
     
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_15_1.png)
+![png](./img/output_20_1.png)
 
 
 
@@ -461,7 +510,7 @@ visualizer.scatterplot(KMeans(reader).fit(3), title.format(3))
     
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_16_1.png)
+![png](./img/output_21_1.png)
 
 
 
@@ -474,7 +523,7 @@ visualizer.scatterplot(KMeans(reader).fit(5), title.format(5))
     
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_17_1.png)
+![png](./img/output_22_1.png)
 
 
 
@@ -487,7 +536,7 @@ visualizer.scatterplot(KMeans(reader).fit(10), title.format(10))
     
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_18_1.png)
+![png](./img/output_23_1.png)
 
 
 
@@ -500,7 +549,7 @@ visualizer.scatterplot(KMeans(reader).fit(header='MONTH'), 'Crimes per Month')
     
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_19_1.png)
+![png](./img/output_24_1.png)
 
 
 
@@ -513,13 +562,27 @@ visualizer.scatterplot(KMeans(reader).fit(header='OFFENSE_CODE_GROUP'), 'Crimes 
     
 
 
-![png](Crime%20Data%20Exploration_files/Crime%20Data%20Exploration_20_1.png)
+![png](./img/output_25_1.png)
 
+
+# *Note*
+
+We encountered some rendering problems, so we plot only a sample of the data. The sampling amount is passed as a parameter to the 'Map' class constructor and the default value is 500.
 
 
 ```python
-Map(reader).display('OFFENSE_CODE_GROUP')
+Map(reader).display('OFFENSE_CODE_GROUP',coloring_attr = 'YEAR')
 ```
 
-![png](Crime%20Data%20Exploration_files/map.png)
+    <2016: blue> <2017: green> <2018: purple> <2015: orange> 
 
+
+![png](./img/map.png)
+
+# Conclusions:
+
+- Most incidents occurred in 2017.
+- Most incidents occurred between June and September.
+- Slightly more incidents occurred on Fridays.
+- The districts with the most criminality are A1 , B2, B3, C11 and D4.
+- Most incidents happened during the day and most of them were either larceny or motor vehicle accidents.
